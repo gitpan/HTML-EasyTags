@@ -1,0 +1,47 @@
+2001-01-03   Darren Duncan <perl@DarrenDuncan.net>
+
+	* Release 1.02.
+	
+	* This release is the first one following official registrations with 
+	"The Perl 5 Module List".  The updated entry would look like this:
+	
+HTML::
+::EasyTags        bdpO Make proper HTML 4 tags/lists/parts          DUNCAND
+	
+	* This release contains my "HTML::EasyTags" module, which was previously a 
+	part of the following distributions under the temporary name of 
+	"HTML::TagMaker": 
+		- "libdwg": v1.0 r2000-07-23, v1.11 r2000-08-23
+		- "CGI-FormGenerator": v0.9 r2000-09-04, v0.9201 r2000-12-26
+	
+	* This module requires Perl version 5.004 (although 5.0 may work).
+	It also requires Class::ParamParser 1.01.
+
+	* Code changes since HTML::TagMaker consist mainly in the removal of the 
+	start_html() and end_html() methods; these were superfluous to the purpose 
+	of the module, had unstable feature sets, and I deemed them proprietary.
+	The POD also received significant updates.
+	
+2000-12-26   Darren Duncan <perl@DarrenDuncan.net>
+
+	* CGI-FormGenerator 0.9201, the last version of any distribution to include
+HTML::TagMaker, was released.
+	
+2000-07-23   Darren Duncan <perl@DarrenDuncan.net>
+
+	* libdwg 1.0, the first version of any distribution to include
+HTML::TagMaker, was released on CPAN.
+	
+2000-04-21   Darren Duncan <perl@DarrenDuncan.net>
+
+	* Completed primary development on this module.
+
+2000-01-30   Darren Duncan <perl@DarrenDuncan.net>
+
+	* Began development on the final version of this module.
+	
+	* Module based on a template created by h2xs 1.18.
+
+1999-07-29 thru 1999-11-13
+
+	* Worked on prototype of code that ended up in this module.
