@@ -1,3 +1,46 @@
+2001-09-02   Darren Duncan <perl@DarrenDuncan.net>
+
+	* Release 1.06.
+	
+	* This release adds support for the stricter requirements of W3C's XHTML 
+	standard where possible.  See "http://www.w3.org/TR/xhtml1" for details on 
+	how this standard compares to HTML 4.  As a result, the default output from 
+	this class is now slightly different from before.  However, the changes 
+	should be backwards-compatible with older user agents (web browsers).
+	
+	* HTML tag and attribute names are now made lowercased instead of uppercased.  
+	While HTML 4 is not case sensitive, XHTML requires lowercased names.
+
+	* XHTML requires "minimized" tags, which are tags that do not come as a pair 
+	of "start/end" tags, to have a different format than "start" tags.  Such 
+	tags include ["br", "img", "input"].  This class now creates such tags like 
+	"<br />" instead of "<br>".  Tags as pairs remain the same, "<p></p>".
+	
+	* There is a new autoloaded method suffix for forcing construction of tag 
+	parts that are different than the usual, called "mini".  (The others were 
+	["pair", "start", "end"].)  The new "mini" suffix will force minimized 
+	format, such as "<p />", which is different from "start", which continues to 
+	force "<p>".  From now on, "mini" is meant for tags you are using as singles, 
+	where "start" is meant where you will also use an "end" later to pair it up.
+	
+	* For so-called "no value" tag attributes, where positive assertion was 
+	provided by the presence of the attribute name alone (eg: checked, selected), 
+	these now show values in "key=value" format rather than "key" when they are 
+	true.  They are still completely absent as before if they are false, for 
+	backward compatability.
+	
+	* The value that prologue_tag() returns is now customizable.  A new object 
+	property was added to store the prologue tag (doctype/dtd), for which 
+	prologue_tag() is now a get/set accessor.  For backwards compatability with 
+	earlier releases, '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">' is 
+	the default value.
+	
+	* Updated the test.pl for the new stricter behaviour like lowercased tags.  
+	There are now 73 tests up from 69; two more for prologue, two for "mini".
+	
+	* Updated documentation, particularly the NAME and DESCRIPTION and SYNTAX, 
+	plus some method descriptions and the ReadMe file.
+
 2001-05-08   Darren Duncan <perl@DarrenDuncan.net>
 
 	* Release 1.05.

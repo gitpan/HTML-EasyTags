@@ -1,6 +1,6 @@
 =head1 NAME
 
-HTML::EasyTags - Make any proper HTML 4 tags/lists/parts easily
+HTML::EasyTags - Make well-formed XHTML or HTML 4 tags/lists/parts easily
 
 =cut
 
@@ -17,7 +17,7 @@ require 5.004;
 
 use strict;
 use vars qw($VERSION $AUTOLOAD);
-$VERSION = '1.05';
+$VERSION = '1.06';
 
 ######################################################################
 
@@ -45,8 +45,9 @@ $VERSION = '1.05';
 	print
 		$html->start_html( 
 			'This Is My Page',
-			$html->style( $html->comment_tag( <<__endquote ) ),
-	\nBODY {
+			$html->style( { type => 'text/css' }, 
+				$html->comment_tag( <<__endquote ) ),
+	\nbody {
 		background-color: #ffffff; 
 		background-image: none;
 	}
@@ -95,15 +96,16 @@ $VERSION = '1.05';
 
 =head1 DESCRIPTION
 
-This Perl 5 object class can be used to generate any HTML tags in a format that
-is consistent with the W3C HTML 4.0 standard.  There are no restrictions on what
-tags are named, however; you can ask for any new or unsupported tag that comes
-along from Netscape or Microsoft, and it will be made.  Additionally, you can
-generate lists of said tags with one method call, or just parts of said tags (but
-not both at once).
+This Perl 5 object class can be used to generate any well-formed XHTML or HTML
+tags in a format that is consistent with the W3C XHTML 1.0 or HTML 4.01
+standards.  See B<http://www.w3.org/TR/xhtml1> and B<http://www.w3c.org/MarkUp>
+for references.  There are no restrictions on what tags are named, however; you
+can ask for any new or unsupported tag that comes along from Netscape or
+Microsoft, and it will be made.  Additionally, you can generate lists of said
+tags with one method call, or just parts of said tags (but not both at once).
 
 This module's purpose is to be lightweight, easy to use, and whose results are
-syntactically correct and nicely formatted (should humans wish to read or debug
+well-formed and pretty-printed (should humans wish to read or debug
 it).  At the same time, it is supportive of your existing knowledge of HTML and 
 as such its interface closely mirrors the actual appearance of the resulting 
 tags.  This means that methods have the same name as the actual tags, and named
@@ -114,83 +116,84 @@ backwards-compatible with those in CGI.pm, but you are saved 200K of code size.
 
 As a reference, I strongly recommend that you check out B<Kevin Werbach's>
 excellent "The Bare Bones Guide to HTML", which is available at
-B<http://werbach.com/barebones/>. I found this document invaluable when making
+B<http://werbach.com/barebones/>.  I found this document invaluable when making
 this module, as it provides a comprehensive list of all the HTML tags along with
 their formatting and extensions.
 
-In this implementation, "standard format" means that tags are made as pairs
-(<TAG></TAG>) by default, unless they are known to be "no pair" tags.  Tags that
-I know to be "no pair" are [basefont, img, area, param, br, hr, input, option,
-tbody, frame, comment, isindex, base, link, meta].  However, you can force any
-tag to be "pair" or "start only" or "end only" by appropriately modifying your
-call to the tag making method.
+In this implementation, "well formed" means that tags are made as pairs by
+default, which look like "<tag></tag>", unless they are known to be "no pair"
+tags, in which case they look like "<tag />".  Tags that I know to be "no pair"
+are [basefont, img, area, param, br, hr, input, option, tbody, frame, comment,
+isindex, base, link, meta].  However, you can force any tag to be "pair" or
+"start only" or "end only" by appropriately modifying your call to the tag making
+method.
 
-Also, "standard format" means that tag modifiers are formatted as "key=value" by
-default, unless they are known to be "no value" modifiers.  Modifiers that I know
-to be "no value" are [ismap, noshade, compact, checked, multiple, selected,
-nowrap, noresize, param].  These are formatted simply as "key" because their very
-presence indicates positive assertion, while their absense means otherwise.  For
-modifiers with values, the values will always become bounded by quotes, which
-ensures they work with both string and numerical quantities (eg: key="value").
+Also, "well formed" means that tag attributes are formatted as "key=value". While
+the HTML standard allowed there to be "no value" attributes, XHTML does not. 
+These were formatted simply as "key" because their very presence indicates
+positive assertion, while their absense means otherwise.  Before release 1-06,
+attributes that were known to be "no value" attributes were formatted as "key" by
+default.  Modifiers that I know to be "no value" are [ismap, noshade, compact,
+checked, multiple, selected, nowrap, noresize, param].  As of release 1-06, "no
+value" attributes are formatted as 'key="1"' when they are true and they are
+absent when false, to keep backwards compatability.  "Well formed" means that 
+attribute values will always become bounded by quotes, which ensures they work 
+with both string and numerical quantities (eg: key="value").
 
 Convenience methods start_html() and end_html() are provided to generate the 
 required HTML that appears above and below your content; however, you can still 
 make said HTML one tag at a time if you wish.
 
-As of release 1.05 this class supports frameset documents as well as normal HTML 
-in its start_html() and end_html() methods, so you don't need to sidestep those 
-methods to do it as before.
-
 =head1 HTML CODE FROM SYNOPSIS PROGRAM
 
 	<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
-	<HTML>
-	<HEAD>
-	<TITLE>This Is My Page</TITLE>
-	<STYLE>
+	<html>
+	<head>
+	<title>This Is My Page</title>
+	<style type="text/css">
 	<!-- 
-	BODY {
+	body {
 		background-color: #ffffff; 
 		background-image: none;
 	}
-	 --></STYLE>
-	</HEAD>
-	<BODY>
-	<H1>A Simple Example</H1>
-	<P>Click 
-	<A HREF="http://search.cpan.org">here</A> for more.</P>
-	<HR>
-	<TABLE>
-	<TR>
-	<TH>Name</TH>
-	<TH>Count</TH>
-	<TH>URL</TH>
-	<TH>First Access</TH></TR>
-	<TR>
-	<TD>Old Page</TD>
-	<TD>33</TD>
-	<TD>http://www.domain.com</TD>
-	<TD>1999/04/23 13:55:02</TD></TR></TABLE>
-	<HR>
-	<FORM METHOD="post" ACTION="http://localhost">
-	<P>What's your name? 
-	<INPUT TYPE="text" NAME="name"></P>
-	<P>What's the combination?
-	<INPUT TYPE="checkbox" NAME="words" CHECKED VALUE="eenie">Eenie
-	<INPUT TYPE="checkbox" NAME="words" VALUE="meenie">Meenie
-	<INPUT TYPE="checkbox" NAME="words" CHECKED VALUE="minie">Minie
-	<INPUT TYPE="checkbox" NAME="words" VALUE="moe">Moe</P>
-	<P>What's your favorite colour? 
-	<SELECT NAME="color" SIZE="1">
-	<OPTION VALUE="red">Red
-	<OPTION VALUE="green">Green
-	<OPTION VALUE="blue">Blue
-	<OPTION VALUE="chartreuse">Chartreuse
-	</SELECT></P>
-	<INPUT TYPE="submit">
-	</FORM>
-	</BODY>
-	</HTML>
+	 --></style>
+	</head>
+	<body>
+	<h1>A Simple Example</h1>
+	<p>Click 
+	<a href="http://search.cpan.org">here</a> for more.</p>
+	<hr />
+	<table>
+	<tr>
+	<th>Name</th>
+	<th>Count</th>
+	<th>URL</th>
+	<th>First Access</th></tr>
+	<tr>
+	<td>Old Page</td>
+	<td>33</td>
+	<td>http://www.domain.com</td>
+	<td>1999/04/23 13:55:02</td></tr></table>
+	<hr />
+	<form method="post" action="http://localhost">
+	<p>What's your name? 
+	<input type="text" name="name" /></p>
+	<p>What's the combination?
+	<input type="checkbox" name="words" checked="1" value="eenie" />Eenie
+	<input type="checkbox" name="words" value="meenie" />Meenie
+	<input type="checkbox" name="words" checked="1" value="minie" />Minie
+	<input type="checkbox" name="words" value="moe" />Moe</p>
+	<p>What's your favorite colour? 
+	<select name="color" size="1">
+	<option value="red" />Red
+	<option value="green" />Green
+	<option value="blue" />Blue
+	<option value="chartreuse" />Chartreuse
+	</select></p>
+	<input type="submit" />
+	</form>
+	</body>
+	</html>
 
 =cut
 
@@ -198,6 +201,7 @@ methods to do it as before.
 
 # Names of properties for objects of this class are declared here:
 my $KEY_AUTO_GROUP = 'auto_group';  # do we make tag groups by default?
+my $KEY_PROLOGUE = 'prologue';  # special prologue starting every html page
 
 # These extra tag properties work only with AUTOLOAD:
 my $PARAM_TEXT = 'text';  #tag pair is wrapped around this
@@ -206,9 +210,10 @@ my $PARAM_LIST = 'list';  #force tag groups to be returned in ARRAY ref
 # Constant values used in this class go here:
 
 my $TAG_GROUP = 'group';  # values that "what_to_make" can have
-my $TAG_PAIR  = 'pair'; 
-my $TAG_START = 'start';
-my $TAG_END   = 'end';
+my $TAG_PAIR  = 'pair';  # this one looks like "<tag></tag>"
+my $TAG_START = 'start';  # this one looks like "<tag>"
+my $TAG_END   = 'end';  # this one looks like "</tag>"
+my $TAG_MINI  = 'mini';  # this one stands for "minimized" or "<tag />"
 
 my %NO_PAIR_TAGS = (  # comments correspond to Bare Bones sections
 	basefont => 1,   # PRESENTATION FORMATTING
@@ -284,18 +289,19 @@ and possibly speed up the program because there is less copying done.
 
 Through the magic of autoloading, this class can make any html tag by calling a
 class method with the same name as the tag you want.  For examples, use "hr()" to
-make a "<HR>" tag, or "p('text')" to make "<P>text</P>".  This also means that if
+make a "<hr />" tag, or "p('text')" to make "<p>text</p>".  This also means that if
 you mis-spell any method name, it will still make a new tag with the mis-spelled
 name.  For autoloaded methods only, the method names are case-insensitive.
 
 If you call a class method whose name ends in either of ['_start', '_end',
-'_pair'], this will be interpreted as an instruction to make just part of one tag
-whose name are the part of the method name preceeding that suffix.  For example,
-calling "p_start( 'text' )" results in "<P>text" rather than "<P>text</P>". 
-Similarly, calling "p_end()" will generate a "</P>" only.  Using the '_pair'
-suffix will force tags to be made as a pair, whether or not they would do so
-naturally.  For example, calling "br_pair" would produce a "<BR></BR>" rather
-than the normal "<BR>".  When using either of ['_start','_pair'], the arguments
+'_pair', '_mini'], this will be interpreted as an instruction to make just part
+of one tag whose name are the part of the method name preceeding that suffix. 
+For example, calling "p_start( 'text' )" results in "<p>text" rather than
+"<p>text</p>". Similarly, calling "p_end()" will generate a "</p>" only.  Using
+the '_pair' suffix will force tags to be made as a pair, whether or not they
+would do so naturally.  For example, calling "br_pair" would produce a
+"<br></br>" rather than the normal "<br />".  Calling "p_mini( 'text' )" results
+in "<p />text".  When using either of ['_start', '_pair', '_mini'], the arguments
 you pass the method are exactly the same as the unmodified method would use, and
 there are no other symantec differences.  However, when using the '_end' suffix,
 any arguments are ignored, as the latter member of a tag pair never carries any
@@ -304,7 +310,7 @@ attributes anyway.
 If you call a class method whose name ends in "_group", this will be interpreted
 as an instruction to make a list of tags whose name are the part of the method
 name preceeding the "_group".  For example, calling "td_group(
-['here','we','are'] )" results in "<TD>here</TD><TD>we</TD><TD>are</TD>" being
+['here','we','are'] )" results in "<td>here</td><td>we</td><td>are</td>" being
 generated.  The arguments that you call this method are exactly the same as for
 calling a method to make a single tag of the same name, except that the extra
 optional parameter "list" can be used to force an ARRAY ref of the new tags to be
@@ -325,8 +331,8 @@ names and values correspond to attribute names and values for the new tags.
 Since "no value" attributes are essentially booleans, they can have any true or
 false value associated with them in the parameter list, which won't be printed. 
 If an autoloaded method is passed exactly one parameter, it will be interpreted
-as the "text" that goes between the tag pair (<TAG>text</TAG>) or after "start
-tags" (<TAG>text).  The same result can be had explicitely by passing the named
+as the "text" that goes between the tag pair (<tag>text</tag>) or after "start
+tags" (<tag>text).  The same result can be had explicitely by passing the named
 parameter "text".  The names of any named parameters can upper or lower or 
 mixed case, as is your preference, and optionally start with a "-".
 
@@ -350,7 +356,8 @@ sub AUTOLOAD {
 
 	# Determine what part of the html tag to make.
 
-	unless( $what_to_make =~ /^($TAG_GROUP|$TAG_PAIR|$TAG_START|$TAG_END)$/ ) {
+	unless( $what_to_make =~ 
+			/^($TAG_GROUP|$TAG_PAIR|$TAG_START|$TAG_END|$TAG_MINI)$/ ) {
 		if( $self->{$KEY_AUTO_GROUP} ) {
 			$what_to_make = $TAG_GROUP;
 		} else {
@@ -420,6 +427,8 @@ page.
 sub initialize {
 	my $self = shift( @_ );
 	$self->{$KEY_AUTO_GROUP} = 0;
+	$self->{$KEY_PROLOGUE} = 
+		"\n".'<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">';
 }
 
 ######################################################################
@@ -442,6 +451,7 @@ sub clone {
 	ref($clone) eq ref($self) or $clone = bless( {}, ref($self) );
 	
 	$clone->{$KEY_AUTO_GROUP} = $self->{$KEY_AUTO_GROUP};
+	$clone->{$KEY_PROLOGUE} = $self->{$KEY_PROLOGUE};
 	
 	return( $clone );
 }
@@ -453,7 +463,7 @@ sub clone {
 This method is an accessor for the boolean "automatic grouping" property of this
 object, which it returns.  If VALUE is defined, this property is set to it.  In
 cases where we aren't told explicitely that autoloaded methods are making a
-single or multiple tags (using ['_start', '_end', '_pair'] and '_group'
+single or multiple tags (using ['_start', '_end', '_pair', '_mini'] and '_group'
 respectively), we look to this property to determine what operation we guess. 
 The default is "single".  When this property is true, we can make both single and
 groups of tags by using a suffix-less method name; however, making single tags
@@ -475,12 +485,15 @@ sub groups_by_default {
 
 ######################################################################
 
-=head2 prologue_tag()
+=head2 prologue_tag([ VALUE ])
 
-This method returns a prologue tag, which is meant to be the very first thing in
-an HTML document.  It tells the web browser such things as what version of the
-HTML standard we are adhering to, version 4.0 in this case.  The prologue tag we
-make looks like '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">'.
+This method is an accessor for the scalar "prologue tag" property of this object,
+which it returns.  If VALUE is defined, this property is set to it. This property
+is meant to be used literally and be the very first thing in an XHTML or HTML
+document.  It tells the web browser such things as what version of the HTML
+standard we are adhering to.  Citing backwards compatability with earlier
+versions of this class, the default prologue tag we make is for HTML version 4.0
+and looks like '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">'.
 
 =cut
 
@@ -488,7 +501,10 @@ make looks like '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">'.
 
 sub prologue_tag {
 	my $self = shift( @_ );
-	return( "\n".'<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">' );
+	if( defined( my $new_value = shift( @_ ) ) ) {
+		$self->{$KEY_PROLOGUE} = $new_value;
+	}
+	return( $self->{$KEY_PROLOGUE} );
 }
 
 ######################################################################
@@ -556,18 +572,14 @@ sub make_html_tag {
 
 	# Determine what part of the html tag to make
 
-	unless( $what_to_make =~ /^($TAG_PAIR|$TAG_START|$TAG_END)$/ ) {
-		$what_to_make = $NO_PAIR_TAGS{$tag_name} ? $TAG_START : $TAG_PAIR;
+	unless( $what_to_make =~ /^($TAG_PAIR|$TAG_START|$TAG_END|$TAG_MINI)$/ ) {
+		$what_to_make = $NO_PAIR_TAGS{$tag_name} ? $TAG_MINI : $TAG_PAIR;
 	}
-	
-	# Make uppercased version of tag name since that's what we output
-
-	my $tag_name_uc = uc($tag_name);
 	
 	# Shortcut - if we're making just an end tag, there are no args or text
 
 	if( $what_to_make eq $TAG_END ) {
-		return( "\n</$tag_name_uc>" );
+		return( "\n</$tag_name>" );
 	}
 				
 	# Assemble the html tag attributes, ordered with more important on the left
@@ -583,25 +595,26 @@ sub make_html_tag {
 		next if( $NO_VALUE_PARAMS{$param} and !$tag_params{$param} );
 
 		# Show names of attributes that display with values or are true
-
-		$param_str .= ' '.uc( $param );
-
 		# Show values of attributes that display with values, in quotes
 
-		unless( $NO_VALUE_PARAMS{$param} ) {
-			$param_str .= "=\"$tag_params{$param}\"";
-		}
+		$param_str .= " $param=\"$tag_params{$param}\"";
 	}
 
+	# Here we make just a minimized tag with attributes and text
+
+	if( $what_to_make eq $TAG_MINI ) {
+		return( "\n<$tag_name$param_str />$text" );
+	}
+	
 	# Here we make just a start tag with attributes and text
 
 	if( $what_to_make eq $TAG_START ) {
-		return( "\n<$tag_name_uc$param_str>$text" );
+		return( "\n<$tag_name$param_str>$text" );
 	}
 	
 	# Here we make both start and end tags, with attributes and text
 	
-	return( "\n<$tag_name_uc$param_str>$text</$tag_name_uc>" );
+	return( "\n<$tag_name$param_str>$text</$tag_name>" );
 }
 
 ######################################################################
@@ -674,10 +687,6 @@ sub make_html_tag_group {
 			map { $last_value } (($#{$ra_values} + 1)..$max_tag_ind) );
 	}
 	
-	# Make uppercased version of tag name since that's what we output
-
-	my $tag_name_uc = uc($tag_name);
-
 	# Now put the text back where it belongs; its value count is now normalized
 
 	my $ra_text = delete( $tag_params{$PARAM_TEXT} );
@@ -709,29 +718,24 @@ sub make_html_tag_group {
 				!$tag_params{$param}->[$index] );
 
 			# Show names of attributes that display with values or are true
-
-			$param_str .= ' '.uc( $param );
-
 			# Show values of attributes that display with values, in quotes
 
-			unless( $NO_VALUE_PARAMS{$param} ) {
-				$param_str .= "=\"$tag_params{$param}->[$index]\"";
-			}
+			$param_str .= " $param=\"$tag_params{$param}->[$index]\"";
 		}
 
 		# Get the visible text for the tag.
 
 		my $text = $ra_text->[$index];
 
-		# Here we make just a start tag with attributes and text
+		# Here we make just a minimized tag with attributes and text
 
 		if( $NO_PAIR_TAGS{$tag_name} ) {
-			push( @new_tags, "\n<$tag_name_uc$param_str>$text" );
+			push( @new_tags, "\n<$tag_name$param_str />$text" );
 
 		# Here we make both start and end tags, with attributes and text
 
 		} else {
-			push( @new_tags, "\n<$tag_name_uc$param_str>$text</$tag_name_uc>" );
+			push( @new_tags, "\n<$tag_name$param_str>$text</$tag_name>" );
 		}
 	}
 
@@ -755,8 +759,8 @@ Array ref (or scalar) containing anything else you would like to appear in the
 BODY, is a Hash ref containing attributes and values for the opening 'body' tag.
 As of release 1.05 this class supports frameset documents as well as normal HTML.
 If the fourth argument, FRAMESET, is true, then it is assumed we will be making a
-frameset document, whereby the body section is wrapped in a <NOFRAMES> pair and
-there is a <FRAMESET> pair between the head and noframes/body sections.  FRAMESET
+frameset document, whereby the body section is wrapped in a <noframes> pair and
+there is a <frameset> pair between the head and noframes/body sections.  FRAMESET
 is a Hash ref that contains the attributes and values that go in the opening
 frameset tag (analogous to BODY argument), except that a 'text' attribute will be
 resolved into the text that goes inside the frameset pair, as with any autoloaded
@@ -880,7 +884,7 @@ of CGI.pm will do so.
 =item 0
 
 We go further to make the generated HTML human-readable by: 1. having each
-new tag start on a new line; 2. making all tag and attribute names uppercase; 3.
+new tag start on a new line; 2. making all tag and attribute names lowercase; 3.
 ensuring that about 20 often-used tag attributes always appear in the same order
 (eg: 'type' is before 'name' is before 'value'), and before any others.
 
@@ -935,6 +939,15 @@ uses I had for the document was in determining all the HTML tags which were not
 used as a pair (most use pairs, few don't), and for determining which tag
 attributes made a positive assertion just by their presence, without need for any
 associated values (most have values, few don't).
+
+Thanks to W3C for publishing their standards documents in an easy-to-understand 
+manner.  I made good use of their XHTML primer document when making release 1-06 
+of this module.  The most recent version is at "http://www.w3.org/TR/xhtml1".  
+The full title is "XHTML(TM) 1.0: The Extensible HyperText Markup Language -- 
+A Reformulation of HTML 4 in XML 1.0 -- W3C Recommendation 26 January 2000".  
+I used this document to determine what changes I needed to make for this 
+module's output to easily support the new XHTML standard as it supported HTML 4 
+and previous versions before, while keeping backwards compatability.
 
 Thanks to B<Lincoln D. Stein> for setting a good interface standard in the
 HTML-related methods of his CGI.pm module.  I was heavily influenced by his

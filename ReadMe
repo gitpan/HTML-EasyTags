@@ -90,7 +90,10 @@ support issues later, so that users of my modules can help each other with them.
 
 TO DO
 
-	* Perhaps make the prologue_tag() method customizable as to what it returns.
+	* Allow customization of the now-constant class properties that determine 
+	the default format for new tags, such as which are "no pair tags" (that is, 
+	in minimized format) and which are "no value attributes" (with false values, 
+	names don't appear either), and preferred order of attributes in tags.
 	* I have no more ideas in this regard, but am open to suggestions.
 	* Get my other modules done.
 
