@@ -6,12 +6,15 @@
 # Change 1..1 below to 1..last_test_to_print .
 # (It may become useful if the test is moved to ./t subdirectory.)
 
-BEGIN { $| = 1; print "1..65\n"; }
+BEGIN { $| = 1; print "1..64\n"; }
 END {print "not ok 1\n" unless $loaded;}
-use HTML::EasyTags 1.03;
+use HTML::EasyTags 1.04;
 $loaded = 1;
 print "ok 1\n";
 use strict;
+
+# Set this to 1 to see complete result text for each test
+my $verbose = 0;
 
 ######################### End of black magic.
 
@@ -27,6 +30,9 @@ my $test_num = 1;  # same as the first test, above
 sub result {
 	$test_num++;
 	my ($worked, $detail) = @_;
+	$verbose or 
+		$detail = substr( $detail, 0, 50 ).
+		(length( $detail ) > 47 ? "..." : "");	
 	print "@{[$worked ? '' : 'not ']}ok $test_num $detail\n";
 }
 
@@ -60,7 +66,6 @@ sub serialize {
 {
 	my $html1 = HTML::EasyTags->new();
 	result( UNIVERSAL::isa( $html1, "HTML::EasyTags" ), "new() ret EasyTags obj" );
-	result( UNIVERSAL::isa( $html1, "Class::ParamParser" ), "new() obj isa ParamParser" );
 
 	my ($res1);
 

@@ -5,6 +5,5 @@ WriteMakefile(
 	NAME	=> 'HTML::EasyTags',
 	VERSION_FROM => 'EasyTags.pm', # finds $VERSION
 	PREREQ_PM => {
-		'Class::ParamParser' => 1.03,
 	},
 );

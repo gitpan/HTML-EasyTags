@@ -16,8 +16,8 @@ require 5.004;
 # version then please attach a note listing the modifications.
 
 use strict;
-use vars qw($VERSION @ISA $AUTOLOAD);
-$VERSION = '1.0301';
+use vars qw($VERSION $AUTOLOAD);
+$VERSION = '1.04';
 
 ######################################################################
 
@@ -33,16 +33,7 @@ $VERSION = '1.0301';
 
 =head2 Nonstandard Modules
 
-	Class::ParamParser 1.03
-
-=cut
-
-######################################################################
-
-use Class::ParamParser 1.03;
-@ISA = qw( Class::ParamParser );
-
-######################################################################
+	I<none>
 
 =head1 SYNOPSIS
 
@@ -145,9 +136,6 @@ ensures they work with both string and numerical quantities (eg: key="value").
 Convenience methods start_html() and end_html() are provided to generate the 
 required HTML that appears above and below your content; however, you can still 
 make said HTML one tag at a time if you wish.
-
-Note that this class is a subclass of Class::ParamParser, and inherits
-all of its methods, "params_to_hash()" and "params_to_array()".
 
 =head1 HTML CODE FROM SYNOPSIS PROGRAM
 
@@ -369,8 +357,7 @@ sub AUTOLOAD {
 	# Fetch our arguments, which may be in a variety of formats, and extract 
 	# special ones so that they are treated different than others.
 
-	my $rh_params = $self->params_to_hash( 
-		\@_, 0, $PARAM_TEXT, {}, $PARAM_TEXT, 1 );
+	my $rh_params = $self->_params_to_hash( \@_ );
 	my $ra_text = delete( $rh_params->{$PARAM_TEXT} );  # visible text
 	my $force_list = delete( $rh_params->{$PARAM_LIST} );  # keep tags separate
 
@@ -797,6 +784,44 @@ sub end_html {
 }
 
 ######################################################################
+# _params_to_hash( ARGS )
+# This private method cleans up the argument lists passed to autoloaded html 
+# tag making methods and returns the named arguments in a hash.  Input arguments, 
+# provided in ARGS, are usually in named format, and the names can be any case or 
+# optionally begin with a "-".  We know that ARGS is named format if the first 
+# element is a hash ref or there is more than one element; ARGS is not in named 
+# format if there is only one element and it is not a hash ref.  In the second 
+# case this single element is implicitely named 'text' and returned that way.
+# If the first ARGS element is a hash and there are more elements, then the 
+# second one is implicitely named 'text' and inserted into the returned hash.
+
+sub _params_to_hash {
+	my ($self, $ra_params_in) = @_;
+	@{$ra_params_in} or return( {} );
+	
+	my %params_in = ();
+	if( ref( $ra_params_in->[0] ) eq 'HASH' ) {
+		%params_in = %{$ra_params_in->[0]};
+		@{$ra_params_in} > 1 and 
+			$params_in{$PARAM_TEXT} = $ra_params_in->[1];
+	} elsif( @{$ra_params_in} == 1 ) {
+		return( { $PARAM_TEXT => $ra_params_in->[0] } );
+	} else {
+		%params_in = @{$ra_params_in};
+	}
+	
+	my %params_out = ();
+	foreach my $key (sort keys %params_in) {
+		my $value = $params_in{$key};
+		substr( $key, 0, 1 ) eq '-' and $key = substr( $key, 1 );
+		$params_out{lc( $key )} = $value;
+	}
+
+	delete( $params_out{''} );
+	return( \%params_out );
+}
+
+######################################################################
 
 1;
 __END__
@@ -826,13 +851,6 @@ CGI.pm does not do end-only tags.
 Autoloaded methods that make html tags won't concatenate their arguments
 into a single argument under any circumstances, but in some cases the "shortcuts"
 of CGI.pm will do so.
-
-=item 0
-
-Currently we don't html-escape any argument values passed to our tag making
-functions, whereas CGI.pm sometimes does.  While we expect our caller to do the
-escaping themselves where necessary, perhaps using a CPAN module especially 
-designed for HTML escaping, we may do it later in an update.
 
 =item 0
 
@@ -898,6 +916,6 @@ Synopsis program from his aforementioned module.
 
 =head1 SEE ALSO
 
-perl(1), Class::ParamParser, HTML::FormTemplate, CGI.
+perl(1), HTML::FormTemplate, CGI.
 
 =cut

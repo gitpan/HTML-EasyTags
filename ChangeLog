@@ -1,3 +1,19 @@
+2001-04-17   Darren Duncan <perl@DarrenDuncan.net>
+
+	* Release 1.04.
+	
+	* HTML::EasyTags now does not require any other modules and will work on its 
+	own.  The small portion of Class::ParamParser that this class did use has 
+	been copied over into a private method, which adds less than 1K.  The change 
+	should make HTML::EasyTags easier to use since fundamentally it is a 
+	base-level module and now it acts like it.
+	
+	* Minor changes were made to the module's POD and other documentation files.
+	
+	* Modified test.pl so that it automatically trims long outputs at 50 
+	characters, ensuring that each "ok NN" line does not wrap to multiple lines.
+	This behaviour can be toggled with the $verbose variable.
+
 2001-03-14   Darren Duncan <perl@DarrenDuncan.net>
 
 	* Release 1.0301.

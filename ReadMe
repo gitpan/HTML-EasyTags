@@ -21,7 +21,7 @@ All of my modules have complete POD inside of them, so please refer to that for 
 description of the module itself.
 
 This Read Me document concerns itself mainly with installation and support
-issues, and also includes any "To Do" lists and the file manifest.
+issues, and also includes any "To Do" lists.
 
 KEEPING UP TO DATE
 
@@ -43,12 +43,7 @@ it, in the interest of consistency.  That said, Perl 5.004 is already 3 years
 old, is available as a binary on practically every OS that supports Perl at all, 
 and is a very solid release, so I see no reason to support anything older.
 
-Modules in this distribution require modules in these following distributions:
-
-Class-ParamParser-1.03.tar.gz
-	- by Darren Duncan (DUNCAND)
-	- Class::ParamParser 1.03 is required by:
-		- HTML::EasyTags (as a parent class; parses method arguments)
+This module doesn't require anything else.
 
 INSTALLATION
 
