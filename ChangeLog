@@ -1,3 +1,20 @@
+2001-05-08   Darren Duncan <perl@DarrenDuncan.net>
+
+	* Release 1.05.
+	
+	* This release adds explicit frames support to the start_html() and 
+	end_html() methods, so that they can be used in the construction of an 
+	HTML 4 frameset document.  It is assumed in that case that any HTML going 
+	between the output of these two methods would be for browsers that don't 
+	understand frames, that is, the "noframes" section.  Each method has an 
+	additional argument now for frame support.  The new 4th argument to 
+	start_html() is usually a hash of attributes for the <FRAMESET> tag, and 
+	the various <FRAME> tags would be provided via the hash key 'text'.  The 
+	new 1st argument to end_html() causes it to make the closing noframes tag.
+
+	* No other changes except for 5 additional tests in test.pl and minor POD 
+	updates.  This release is backwards compatible with previous ones.
+
 2001-04-17   Darren Duncan <perl@DarrenDuncan.net>
 
 	* Release 1.04.

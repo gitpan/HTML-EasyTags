@@ -6,9 +6,9 @@
 # Change 1..1 below to 1..last_test_to_print .
 # (It may become useful if the test is moved to ./t subdirectory.)
 
-BEGIN { $| = 1; print "1..64\n"; }
+BEGIN { $| = 1; print "1..69\n"; }
 END {print "not ok 1\n" unless $loaded;}
-use HTML::EasyTags 1.04;
+use HTML::EasyTags 1.05;
 $loaded = 1;
 print "ok 1\n";
 use strict;
@@ -446,6 +446,34 @@ sub serialize {
 	$should = "\n<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\">\n<HTML>".
 		"\n<HEAD>\n<TITLE>my page</TITLE><META>\n</HEAD>\n<BODY BGCOLOR=\"white\">";
 	result( $does eq $should, "start_html( 'my page', '<META>', {bgcolor=>'white'} ) returns '".vis($does)."'" );
+	
+	$does = $html->start_html( 'my frameset', undef, undef, {} );
+	$should = "\n<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\">\n<HTML>".
+		"\n<HEAD>\n<TITLE>my frameset</TITLE>\n</HEAD>".
+		"\n<FRAMESET></FRAMESET>".
+		"\n<NOFRAMES>\n<BODY>";
+	result( $does eq $should, "start_html( 'my frameset', undef, undef, {} ) returns '".vis($does)."'" );
+	
+	$does = $html->start_html( 'my frameset', undef, undef, { rows => '100,*', cols => '200,*', border => 1 } );
+	$should = "\n<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\">\n<HTML>".
+		"\n<HEAD>\n<TITLE>my frameset</TITLE>\n</HEAD>".
+		"\n<FRAMESET ROWS=\"100,*\" COLS=\"200,*\" BORDER=\"1\"></FRAMESET>".
+		"\n<NOFRAMES>\n<BODY>";
+	result( $does eq $should, "start_html( 'my frameset', undef, undef, { rows => '100,*', cols => '200,*', border => 1 } ) returns '".vis($does)."'" );
+	
+	$does = $html->start_html( 'my frameset', undef, undef, '<FRAME NAME="left" SRC="abc"><FRAME NAME="right" SRC="xyz">' );
+	$should = "\n<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\">\n<HTML>".
+		"\n<HEAD>\n<TITLE>my frameset</TITLE>\n</HEAD>".
+		"\n<FRAMESET><FRAME NAME=\"left\" SRC=\"abc\"><FRAME NAME=\"right\" SRC=\"xyz\"></FRAMESET>".
+		"\n<NOFRAMES>\n<BODY>";
+	result( $does eq $should, "start_html( 'my frameset', undef, undef, '<FRAME NAME=\"left\" SRC=\"abc\"><FRAME NAME=\"right\" SRC=\"xyz\">' ) returns '".vis($does)."'" );
+	
+	$does = $html->start_html( 'my frameset', undef, undef, { text => '<FRAME NAME="left" SRC="abc"><FRAME NAME="right" SRC="xyz">' } );
+	$should = "\n<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\">\n<HTML>".
+		"\n<HEAD>\n<TITLE>my frameset</TITLE>\n</HEAD>".
+		"\n<FRAMESET><FRAME NAME=\"left\" SRC=\"abc\"><FRAME NAME=\"right\" SRC=\"xyz\"></FRAMESET>".
+		"\n<NOFRAMES>\n<BODY>";
+	result( $does eq $should, "start_html( 'my frameset', undef, undef, { text => '<FRAME NAME=\"left\" SRC=\"abc\"><FRAME NAME=\"right\" SRC=\"xyz\">' } ) returns '".vis($does)."'" );
 }
 	
 ######################################################################
@@ -458,6 +486,10 @@ sub serialize {
 	$does = $html->end_html();
 	$should = "\n</BODY>\n</HTML>";
 	result( $does eq $should, "end_html() returns '".vis($does)."'" );
+	
+	$does = $html->end_html( 1 );
+	$should = "\n</BODY>\n</NOFRAMES>\n</HTML>";
+	result( $does eq $should, "end_html( 1 ) returns '".vis($does)."'" );
 }
 	
 ######################################################################
