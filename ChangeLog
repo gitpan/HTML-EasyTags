@@ -1,3 +1,19 @@
+2001-03-14   Darren Duncan <perl@DarrenDuncan.net>
+
+	* Release 1.0301.
+	
+	* This release fixes a couple of documentation bugs.  There were no 
+	changes made to the code itself as that was fine.
+	
+	* The SYNOPSIS section used to show one calling start_html() using named 
+	parameters, a feature which was dropped after v1.01.  The method actually 
+	takes positional parameters only, and SYNOPSIS has been updated to show 
+	proper calling style.
+	
+	* Also fixed a bug in the ReadMe file where the file heading said 
+	"class method parameter parser" instead of "easy html tag maker".
+	The wrong heading referred to a different distribution.
+	
 2001-02-15   Darren Duncan <perl@DarrenDuncan.net>
 
 	* Release 1.03.

@@ -17,7 +17,7 @@ require 5.004;
 
 use strict;
 use vars qw($VERSION @ISA $AUTOLOAD);
-$VERSION = '1.03';
+$VERSION = '1.0301';
 
 ######################################################################
 
@@ -53,8 +53,8 @@ use Class::ParamParser 1.03;
 
 	print
 		$html->start_html( 
-			-title => 'This Is My Page',
-			-head => $html->style( $html->comment_tag( <<__endquote ) ),
+			'This Is My Page',
+			$html->style( $html->comment_tag( <<__endquote ) ),
 	\nBODY {
 		background-color: #ffffff; 
 		background-image: none;

@@ -1,4 +1,4 @@
-                     CLASS METHOD PARAMETER PARSER
+                        EASY HTML TAG MAKER
 ----------------------------------------------------------------------
 
 by Darren Duncan <perl@DarrenDuncan.net>
@@ -95,6 +95,7 @@ support issues later, so that users of my modules can help each other with them.
 
 TO DO
 
+	* Perhaps make the prologue_tag() method customizable as to what it returns.
 	* I have no more ideas in this regard, but am open to suggestions.
 	* Get my other modules done.
 
