@@ -1,3 +1,24 @@
+2002-12-03   Darren Duncan <perl@DarrenDuncan.net>
+
+	* Release 1.07.
+	
+	* Minor bug fix release to remove any 'uninitialized value' warnings that 
+	appear when running the test suite with the -w option (but the module had 
+	correct output before).
+	
+	* Updated test.pl to check for output produced when some input arguments are 
+	'0'; this string value is false, but should not be treated the same as if 
+	the input was '' or undef; a '0' should not be replaced with a ''.  The 
+	updated test suite was run against both release 1.06 and 1.07, and the new 
+	tests are to ensure the new module produces identical output (the simplest 
+	solutions to eliminate the 'uninitialized value' warnings wouldn't have).  
+	There are now 79 tests up from 73.
+	
+	* Minor documentation update in the README file so that someone can get an 
+	idea what this module does after looking only at the README.  Also an update 
+	to say how to install to a different directory than the default.  Also an 
+	update in the "TO DO" section.
+
 2001-09-02   Darren Duncan <perl@DarrenDuncan.net>
 
 	* Release 1.06.

@@ -9,7 +9,7 @@ HTML::EasyTags - Make well-formed XHTML or HTML 4 tags/lists/parts easily
 package HTML::EasyTags;
 require 5.004;
 
-# Copyright (c) 1999-2001, Darren R. Duncan. All rights reserved. This module is
+# Copyright (c) 1999-2002, Darren R. Duncan. All rights reserved. This module is
 # free software; you can redistribute it and/or modify it under the same terms as
 # Perl itself.  However, I do request that this copyright information remain
 # attached to the file.  If you modify this module and redistribute a changed
@@ -17,7 +17,7 @@ require 5.004;
 
 use strict;
 use vars qw($VERSION $AUTOLOAD);
-$VERSION = '1.06';
+$VERSION = '1.07';
 
 ######################################################################
 
@@ -353,6 +353,7 @@ sub AUTOLOAD {
 	# a certain form of the tag; "group" says make several tags in standard form.
 
 	my ($tag_name, $what_to_make) = split( '_', lc( $called_sub_name ), 2 );
+	$what_to_make ||= '';
 
 	# Determine what part of the html tag to make.
 
@@ -361,7 +362,7 @@ sub AUTOLOAD {
 		if( $self->{$KEY_AUTO_GROUP} ) {
 			$what_to_make = $TAG_GROUP;
 		} else {
-			$what_to_make = undef;
+			$what_to_make = '';
 		}
 	}
 
@@ -562,7 +563,8 @@ sub make_html_tag {
 
 	my $tag_name = lc(shift( @_ ));  # lowercase to match our lookup tables
 	my $rh_params = shift( @_ );
-	my $text = shift( @_ );
+	my $text = shift( @_ ); 
+	defined( $text ) or $text = '';  # avoid warnings
 	my $what_to_make = lc(shift( @_ ));  # lowercase to match our lookup tables
 
 	# Make sure our tag params argument is lowercased, to match our lookup tables
@@ -586,7 +588,7 @@ sub make_html_tag {
 
 	my $param_str = '';
 	foreach my $param ( sort {
-			$PARAMS_PRECEDENCE{$b} <=> $PARAMS_PRECEDENCE{$a}
+			($PARAMS_PRECEDENCE{$b} || 0) <=> ($PARAMS_PRECEDENCE{$a} || 0)
 			} keys %tag_params ) {
 
 		# Some tag attributes assert true simply by their names being present.
@@ -693,8 +695,8 @@ sub make_html_tag_group {
 
 	# Get list of html tag attribute names, ordered with more important on left
 
-	my @param_seq = sort { $PARAMS_PRECEDENCE{$b} 
-		<=> $PARAMS_PRECEDENCE{$a} } keys %tag_params;
+	my @param_seq = sort { ($PARAMS_PRECEDENCE{$b} || 0)
+		<=> ($PARAMS_PRECEDENCE{$a} || 0) } keys %tag_params;
 
 	# Declare the destination variable we will output
 
@@ -725,7 +727,7 @@ sub make_html_tag_group {
 
 		# Get the visible text for the tag.
 
-		my $text = $ra_text->[$index];
+		my $text = defined( $ra_text->[$index] ) ? $ra_text->[$index] : '';
 
 		# Here we make just a minimized tag with attributes and text
 
@@ -779,7 +781,7 @@ sub start_html {
 		$self->html_start(),
 		$self->head_start(),
 		$self->title( $title || 'Untitled Document' ),
-		ref( $ra_head ) eq 'ARRAY' ? @{$ra_head} : $ra_head,
+		ref( $ra_head ) eq 'ARRAY' ? @{$ra_head} : ($ra_head || ''),
 		$self->head_end(),
 		$rh_frameset ? (
 			$self->frameset( $rh_frameset ),
@@ -906,7 +908,7 @@ document support, and CGI.pm has no explicit frameset support.
 
 =head1 AUTHOR
 
-Copyright (c) 1999-2001, Darren R. Duncan. All rights reserved. This module is
+Copyright (c) 1999-2002, Darren R. Duncan. All rights reserved. This module is
 free software; you can redistribute it and/or modify it under the same terms as
 Perl itself.  However, I do request that this copyright information remain
 attached to the file.  If you modify this module and redistribute a changed

@@ -15,7 +15,8 @@ CONTENTS
 
 PREFACE
 
-This distribution features the Perl 5 module named "HTML::EasyTags".
+This distribution features the Perl 5 module named "HTML::EasyTags", 
+for making well-formed XHTML or HTML 4 tags/lists/parts easily.
 
 All of my modules have complete POD inside of them, so please refer to that for a
 description of the module itself.
@@ -59,8 +60,18 @@ The last step probably won't work if you are not the administrator of your
 machine; in that case you either need to get your administrator to install this 
 for you, or put it in a your own local directory instead.
 
-If you are on a Mac system and/or you are otherwise having problems with the 
-Makefile, you can still install this module the old fashioned way, by copying.
+The Makefile.PL can do this for you if you substitute something like the 
+following for the first line above:
+
+	perl Makefile.PL PREFIX=/tmp/myperl5
+	
+or:
+
+	perl Makefile.PL PREFIX=/home/me/myperl5
+
+If you are on a Mac system that is older than Mac OS X (Mac OS 9 or earlier)
+and/or you are otherwise having problems with the Makefile, you can still
+install this module the old fashioned way, by copying.
 
 The file "EasyTags.pm" goes inside the "HTML" folder which is in the "lib" 
 folder that came with your Perl 5 distribution.  
@@ -74,7 +85,7 @@ this:
 Then you would want to run the included test program to make sure the module is 
 installed correctly.  Call it with:
 
-	perl test.pl
+	perl -w test.pl
 
 Any existing POD is embedded in the module itself.  The Makefile probably 
 extracted it for you in the usual manner, or you can run a POD extractor on it 
@@ -90,6 +101,11 @@ support issues later, so that users of my modules can help each other with them.
 
 TO DO
 
+	* Perhaps force output to be well-formed XHTML/XML by throwing exceptions 
+	when provided tag names or tag attribute names are numbers or contain bad 
+	characters like whitespace.
+	* Allow the option of html escaping 'text' values, which sometimes contain 
+	html characters that we want to stay html.
 	* Allow customization of the now-constant class properties that determine 
 	the default format for new tags, such as which are "no pair tags" (that is, 
 	in minimized format) and which are "no value attributes" (with false values, 
@@ -99,7 +115,7 @@ TO DO
 
 AUTHOR
 
-Copyright (c) 1999-2001, Darren R. Duncan. All rights reserved. These modules are
+Copyright (c) 1999-2002, Darren R. Duncan. All rights reserved. These modules are
 free software; you can redistribute them and/or modify them under the same terms
 as Perl itself.  However, I do request that their copyright information remains
 attached to the files.  If you modify this module and redistribute a changed

@@ -6,9 +6,9 @@
 # Change 1..1 below to 1..last_test_to_print .
 # (It may become useful if the test is moved to ./t subdirectory.)
 
-BEGIN { $| = 1; print "1..73\n"; }
+BEGIN { $| = 1; print "1..79\n"; }
 END {print "not ok 1\n" unless $loaded;}
-use HTML::EasyTags 1.06;
+use HTML::EasyTags 1.07;
 $loaded = 1;
 print "ok 1\n";
 use strict;
@@ -36,6 +36,11 @@ sub result {
 	print "@{[$worked ? '' : 'not ']}ok $test_num $detail\n";
 }
 
+sub message {
+	my ($detail) = @_;
+	print "-- $detail\n";
+}
+
 sub vis {
 	my ($str) = @_;
 	$str =~ s/\n/\\n/g;  # make newlines visible
@@ -59,6 +64,10 @@ sub serialize {
 		: "undef".($is_key ? ' => ' : ', ')
 	) );
 }
+
+######################################################################
+
+message( "START TESTING HTML::EasyTags" );
 
 ######################################################################
 # test new(), clone(), and property setting methods, and prologue_tag()
@@ -149,6 +158,11 @@ sub serialize {
 	result( $does eq $should, "make_html_tag( 'img' ) ".
 		"returns '".vis($does)."'" );
 
+	$does = $html->make_html_tag( '0' );
+	$should = "\n<0></0>";
+	result( $does eq $should, "make_html_tag( '0' ) ".
+		"returns '".vis($does)."'" );
+
 	# try with tag name and visible text only
 
 	$does = $html->make_html_tag( 'p', undef, 'hello' );
@@ -159,6 +173,11 @@ sub serialize {
 	$does = $html->make_html_tag( 'img', undef, 'hello' );
 	$should = "\n<img />hello";
 	result( $does eq $should, "make_html_tag( 'img', undef, 'hello' ) ".
+		"returns '".vis($does)."'" );
+
+	$does = $html->make_html_tag( 'p', undef, '0' );
+	$should = "\n<p>0</p>";
+	result( $does eq $should, "make_html_tag( 'p', undef, '0' ) ".
 		"returns '".vis($does)."'" );
 
 	# try with tag name, visible text, and part to make (4 types)
@@ -244,6 +263,11 @@ sub serialize {
 	result( $does eq $should, "make_html_tag( 'input', { type => 'radio', zb => 'xy' } ) ".
 		"returns '".vis($does)."'" );
 
+	$does = $html->make_html_tag( 'input', { 0 => '0' } );
+	$should = "\n<input 0=\"0\" />";
+	result( $does eq $should, "make_html_tag( 'input', { 0 => '0' } ) ".
+		"returns '".vis($does)."'" );
+
 	# try with tag name, tag params, visible text
 
 	$does = $html->make_html_tag( 'p', { class => 'Standard' }, 'hello' );
@@ -278,6 +302,11 @@ sub serialize {
 	result( $does eq $should, "make_html_tag_group( 'img' ) ".
 		"returns '".vis($does)."'" );
 
+	$does = $html->make_html_tag_group( '0' );
+	$should = "\n<0></0>";
+	result( $does eq $should, "make_html_tag_group( '0' ) ".
+		"returns '".vis($does)."'" );
+
 	# try with tag name and visible text only
 
 	$does = $html->make_html_tag_group( 'p', undef, 'hello' );
@@ -303,6 +332,11 @@ sub serialize {
 	$does = $html->make_html_tag_group( 'td', undef, [undef, undef] );
 	$should = "\n<td></td>\n<td></td>";
 	result( $does eq $should, "make_html_tag_group( 'td', undef, [undef, undef] ) ".
+		"returns '".vis($does)."'" );
+
+	$does = $html->make_html_tag_group( 'p', undef, '0' );
+	$should = "\n<p>0</p>";
+	result( $does eq $should, "make_html_tag_group( 'p', undef, '0' ) ".
 		"returns '".vis($does)."'" );
 
 	# try with tag name and tag params only
@@ -339,6 +373,11 @@ sub serialize {
 	$does = $html->make_html_tag_group( 'input', { type => 'radio', zb => 'xy' } );
 	$should = "\n<input type=\"radio\" zb=\"xy\" />";
 	result( $does eq $should, "make_html_tag_group( 'input', { type => 'radio', zb => 'xy' } ) ".
+		"returns '".vis($does)."'" );
+
+	$does = $html->make_html_tag_group( 'input', { 0 => '0' } );
+	$should = "\n<input 0=\"0\" />";
+	result( $does eq $should, "make_html_tag_group( 'input', { 0 => '0' } ) ".
 		"returns '".vis($does)."'" );
 
 	# try with tag name, tag params, visible text
@@ -506,6 +545,10 @@ sub serialize {
 	result( $does eq $should, "end_html( 1 ) returns '".vis($does)."'" );
 }
 	
+######################################################################
+
+message( "DONE TESTING HTML::EasyTags" );
+
 ######################################################################
 
 1;
