@@ -17,7 +17,7 @@ require 5.004;
 
 use strict;
 use vars qw($VERSION @ISA $AUTOLOAD);
-$VERSION = '1.02';
+$VERSION = '1.03';
 
 ######################################################################
 
@@ -33,13 +33,13 @@ $VERSION = '1.02';
 
 =head2 Nonstandard Modules
 
-	Class::ParamParser 1.01
+	Class::ParamParser 1.03
 
 =cut
 
 ######################################################################
 
-use Class::ParamParser 1.01;
+use Class::ParamParser 1.03;
 @ISA = qw( Class::ParamParser );
 
 ######################################################################
@@ -52,18 +52,15 @@ use Class::ParamParser 1.01;
 	$html->groups_by_default( 1 );	
 
 	print
-		$html->prologue_tag,
-		$html->html_start,
-		$html->head_start,
-		$html->title( 'This Is My Page' ),
-		$html->style( $html->comment_tag( <<__endquote ) ),
+		$html->start_html( 
+			-title => 'This Is My Page',
+			-head => $html->style( $html->comment_tag( <<__endquote ) ),
 	\nBODY {
 		background-color: #ffffff; 
 		background-image: none;
 	}
 	__endquote
-		$html->head_end,
-		$html->body_start,
+		),
 		$html->h1( 'A Simple Example' ),	
 		$html->p( 
 			"Click " . 
@@ -103,8 +100,7 @@ use Class::ParamParser 1.01;
 		),
 		$html->input( type => 'submit' ),
 		$html->form_end,	
-		$html->body_end,
-		$html->html_end;
+		$html->end_html;
 
 =head1 DESCRIPTION
 
@@ -145,6 +141,10 @@ nowrap, noresize, param].  These are formatted simply as "key" because their ver
 presence indicates positive assertion, while their absense means otherwise.  For
 modifiers with values, the values will always become bounded by quotes, which
 ensures they work with both string and numerical quantities (eg: key="value").
+
+Convenience methods start_html() and end_html() are provided to generate the 
+required HTML that appears above and below your content; however, you can still 
+make said HTML one tag at a time if you wish.
 
 Note that this class is a subclass of Class::ParamParser, and inherits
 all of its methods, "params_to_hash()" and "params_to_array()".
@@ -206,9 +206,6 @@ all of its methods, "params_to_hash()" and "params_to_array()".
 
 # Names of properties for objects of this class are declared here:
 my $KEY_AUTO_GROUP = 'auto_group';  # do we make tag groups by default?
-my $KEY_AUTO_POSIT = 'auto_posit';  # with methods whose parameters 
-	# could be either named or positional, when we aren't sure what we 
-	# are given, do we guess positional?  Default is named.
 
 # These extra tag properties work only with AUTOLOAD:
 my $PARAM_TEXT = 'text';  #tag pair is wrapped around this
@@ -338,9 +335,10 @@ false value associated with them in the parameter list, which won't be printed.
 If an autoloaded method is passed exactly one parameter, it will be interpreted
 as the "text" that goes between the tag pair (<TAG>text</TAG>) or after "start
 tags" (<TAG>text).  The same result can be had explicitely by passing the named
-parameter "text".  Most static (non-autoloaded) methods require positional
-parameters, except for start_html(), which can take either format.  The names of
-any named parameters can optionally start with a "-".
+parameter "text".  The names of any named parameters can upper or lower or 
+mixed case, as is your preference, and optionally start with a "-".
+
+All static (non-autoloaded) methods require positional parameters.  
 
 =cut
 
@@ -352,9 +350,15 @@ sub AUTOLOAD {
 	$AUTOLOAD =~ m/([^:]*)$/;   # we don't need fully qualified name
 	my $called_sub_name = $1;
 
-	my ($tag_name, $what_to_make) = split( '_', $called_sub_name, 2 );
-	unless( lc($what_to_make) =~ 
-			/^($TAG_GROUP|$TAG_PAIR|$TAG_START|$TAG_END)$/ ) {
+	# Autoloaded subroutines are in the form "tagname_part" or "tagname_group" 
+	# where "tagname" is the literal html tag to make and "part" says to force 
+	# a certain form of the tag; "group" says make several tags in standard form.
+
+	my ($tag_name, $what_to_make) = split( '_', lc( $called_sub_name ), 2 );
+
+	# Determine what part of the html tag to make.
+
+	unless( $what_to_make =~ /^($TAG_GROUP|$TAG_PAIR|$TAG_START|$TAG_END)$/ ) {
 		if( $self->{$KEY_AUTO_GROUP} ) {
 			$what_to_make = $TAG_GROUP;
 		} else {
@@ -362,23 +366,29 @@ sub AUTOLOAD {
 		}
 	}
 
-	my $rh_params = $self->params_to_hash( \@_, 0, $PARAM_TEXT, 
-		{}, $PARAM_TEXT );
-	my $ra_text = delete( $rh_params->{$PARAM_TEXT} );
-	my $force_list = delete( $rh_params->{$PARAM_LIST} );
+	# Fetch our arguments, which may be in a variety of formats, and extract 
+	# special ones so that they are treated different than others.
 
-	if( lc($what_to_make) eq $TAG_GROUP ) {
+	my $rh_params = $self->params_to_hash( 
+		\@_, 0, $PARAM_TEXT, {}, $PARAM_TEXT, 1 );
+	my $ra_text = delete( $rh_params->{$PARAM_TEXT} );  # visible text
+	my $force_list = delete( $rh_params->{$PARAM_LIST} );  # keep tags separate
+
+	# Here we make a group of related html tags; the group may have one member
+
+	if( $what_to_make eq $TAG_GROUP ) {
 		return( $self->make_html_tag_group( 
 			$tag_name, $rh_params, $ra_text, $force_list ) );
 	}
+
+	# Here we make a single html tag, or parts of one
 
 	return( $self->make_html_tag( 
 		$tag_name, $rh_params, $ra_text, $what_to_make ) );
 }
 
 # This is provided so AUTOLOAD isn't called instead.
-sub DESTROY {
-}
+sub DESTROY {}
 
 ######################################################################
 
@@ -386,7 +396,7 @@ sub DESTROY {
 
 Note that all the methods defined below are static, so information specific to
 autoloaded methods won't likely apply to them.  All of these methods take
-positional arguments unless otherwise specified.
+positional arguments.
 
 =head2 new()
 
@@ -419,7 +429,6 @@ page.
 sub initialize {
 	my $self = shift( @_ );
 	$self->{$KEY_AUTO_GROUP} = 0;
-	$self->{$KEY_AUTO_POSIT} = 0;
 }
 
 ######################################################################
@@ -442,7 +451,6 @@ sub clone {
 	ref($clone) eq ref($self) or $clone = bless( {}, ref($self) );
 	
 	$clone->{$KEY_AUTO_GROUP} = $self->{$KEY_AUTO_GROUP};
-	$clone->{$KEY_AUTO_POSIT} = $self->{$KEY_AUTO_POSIT};
 	
 	return( $clone );
 }
@@ -472,27 +480,6 @@ sub groups_by_default {
 		$self->{$KEY_AUTO_GROUP} = $new_value;
 	}
 	return( $self->{$KEY_AUTO_GROUP} );
-}
-
-######################################################################
-
-=head2 positional_by_default([ VALUE ])
-
-This method is an accessor for the boolean "positional arguments" property of
-this object, which it returns.  If VALUE is defined, this property is set to it. 
-With methods whose parameters could be either named or positional, when we aren't
-sure what we are given, do we guess positional?  Default is named.
-
-=cut
-
-######################################################################
-
-sub positional_by_default {
-	my $self = shift( @_ );
-	if( defined( my $new_value = shift( @_ ) ) ) {
-		$self->{$KEY_AUTO_POSIT} = $new_value;
-	}
-	return( $self->{$KEY_AUTO_POSIT} );
 }
 
 ######################################################################
@@ -563,40 +550,66 @@ and acts accordingly.
 
 sub make_html_tag {
 	my $self = shift( @_ );
-	my $tag_name = lc(shift( @_ ));
+
+	# Fetch our arguments
+
+	my $tag_name = lc(shift( @_ ));  # lowercase to match our lookup tables
 	my $rh_params = shift( @_ );
 	my $text = shift( @_ );
-	my $what_to_make = lc(shift( @_ ));
+	my $what_to_make = lc(shift( @_ ));  # lowercase to match our lookup tables
+
+	# Make sure our tag params argument is lowercased, to match our lookup tables
 
 	my %tag_params = map { ( lc($_) => $rh_params->{$_} ) } 
 		(ref($rh_params) eq 'HASH') ? (keys %{$rh_params}) : ();
 
+	# Determine what part of the html tag to make
+
 	unless( $what_to_make =~ /^($TAG_PAIR|$TAG_START|$TAG_END)$/ ) {
-		$what_to_make = 
-			$NO_PAIR_TAGS{$tag_name} ? $TAG_START : $TAG_PAIR;
+		$what_to_make = $NO_PAIR_TAGS{$tag_name} ? $TAG_START : $TAG_PAIR;
 	}
 	
+	# Make uppercased version of tag name since that's what we output
+
 	my $tag_name_uc = uc($tag_name);
 	
+	# Shortcut - if we're making just an end tag, there are no args or text
+
 	if( $what_to_make eq $TAG_END ) {
 		return( "\n</$tag_name_uc>" );
 	}
 				
+	# Assemble the html tag attributes, ordered with more important on the left
+
 	my $param_str = '';
 	foreach my $param ( sort {
 			$PARAMS_PRECEDENCE{$b} <=> $PARAMS_PRECEDENCE{$a}
 			} keys %tag_params ) {
+
+		# Some tag attributes assert true simply by their names being present.
+		# Therefore, omit these if their values are false.
+		
 		next if( $NO_VALUE_PARAMS{$param} and !$tag_params{$param} );
+
+		# Show names of attributes that display with values or are true
+
 		$param_str .= ' '.uc( $param );
+
+		# Show values of attributes that display with values, in quotes
+
 		unless( $NO_VALUE_PARAMS{$param} ) {
 			$param_str .= "=\"$tag_params{$param}\"";
 		}
 	}
 
+	# Here we make just a start tag with attributes and text
+
 	if( $what_to_make eq $TAG_START ) {
 		return( "\n<$tag_name_uc$param_str>$text" );
 	}
-		
+	
+	# Here we make both start and end tags, with attributes and text
+	
 	return( "\n<$tag_name_uc$param_str>$text</$tag_name_uc>" );
 }
 
@@ -627,15 +640,26 @@ attributes take specified values or not, and acts accordingly.
 
 sub make_html_tag_group {
 	my $self = shift( @_ );
-	my $tag_name = lc(shift( @_ ));
+
+	# Fetch our arguments
+
+	my $tag_name = lc(shift( @_ ));  # lowercase to match our lookup tables
 	my $rh_params = shift( @_ );
 	my $text_in = shift( @_ );
 	my $force_list = shift( @_ );
 
+	# Make sure our tag params argument is lowercased, to match our lookup tables
+
 	my %tag_params = map { ( lc($_) => $rh_params->{$_} ) } 
 		(ref($rh_params) eq 'HASH') ? (keys %{$rh_params}) : ();
 
+	# Prepare to normalize the count of text values with other attributes
+
 	$tag_params{$PARAM_TEXT} = $text_in;
+
+	# Ensure that all tag attribute values are in arrays for consistency.
+	# Also, determine the maximum value count of any attribute.
+	# This count determines the count of html tags that we will make.
 
 	my $max_tag_ind = 0;
 	foreach my $key (keys %tag_params) {
@@ -649,38 +673,127 @@ sub make_html_tag_group {
 		}
 	}
 
+	# Ensure that all tag attribute arrays are the same length by taking any 
+	# which are shorter than the longest and extending them; the inserted values 
+	# are copies of the value currently in the highest element of that array.
+
 	foreach my $ra_values (values %tag_params) {
 		my $last_value = $ra_values->[-1];
 		push( @{$ra_values}, 
 			map { $last_value } (($#{$ra_values} + 1)..$max_tag_ind) );
 	}
 	
+	# Make uppercased version of tag name since that's what we output
+
 	my $tag_name_uc = uc($tag_name);
+
+	# Now put the text back where it belongs; its value count is now normalized
+
 	my $ra_text = delete( $tag_params{$PARAM_TEXT} );
+
+	# Get list of html tag attribute names, ordered with more important on left
+
 	my @param_seq = sort { $PARAMS_PRECEDENCE{$b} 
 		<=> $PARAMS_PRECEDENCE{$a} } keys %tag_params;
+
+	# Declare the destination variable we will output
+
 	my @new_tags = ();
+
+	# This loop iterates for the count of html tags we will make.
+	# The loop counter, $index, is used to lookup elements in value arrays 
+	# that go with each tag attribute and visible text for that tag.
 
 	foreach my $index (0..$max_tag_ind) {
 		my $param_str = '';
+
+		# This loop iterates over the attributes that each tag would have.
+
 		foreach my $param ( @param_seq ) {
+
+			# Some tag attributes assert true simply by their names being present
+			# Therefore, omit these if their values are false.
+
 			next if( $NO_VALUE_PARAMS{$param} and 
 				!$tag_params{$param}->[$index] );
+
+			# Show names of attributes that display with values or are true
+
 			$param_str .= ' '.uc( $param );
+
+			# Show values of attributes that display with values, in quotes
+
 			unless( $NO_VALUE_PARAMS{$param} ) {
 				$param_str .= "=\"$tag_params{$param}->[$index]\"";
 			}
 		}
+
+		# Get the visible text for the tag.
+
 		my $text = $ra_text->[$index];
+
+		# Here we make just a start tag with attributes and text
+
 		if( $NO_PAIR_TAGS{$tag_name} ) {
 			push( @new_tags, "\n<$tag_name_uc$param_str>$text" );
+
+		# Here we make both start and end tags, with attributes and text
+
 		} else {
-			push( @new_tags, 
-				"\n<$tag_name_uc$param_str>$text</$tag_name_uc>" );
+			push( @new_tags, "\n<$tag_name_uc$param_str>$text</$tag_name_uc>" );
 		}
 	}
 
+	# Return all of the new tags as either a list (array ref) or a single scalar
+
 	return( $force_list ? \@new_tags : join( '', @new_tags ) );
+}
+
+######################################################################
+
+=head2 start_html([ TITLE[, HEAD[, BODY]] ])
+
+This method returns a canned HTML template that is suitable for use as the top of
+an HTML page.  It consists of the prologue tag (<!DOCTYPE...), the opening 'html'
+tag, the entire 'head' section, and the opening 'body' tag.  The prologue tag
+looks the same as that generated by the class method prologue_tag().  The first
+optional argument, TITLE, is a scalar which defines the title for the document,
+and its default value is 'Untitled Document'.  The second argument, HEAD, is an
+ARRAY ref (or scalar) containing anything else you would like to appear in the
+'head' section; it is flattened and the elements used as-is.  The third argument,
+BODY, is a HASH ref containing attributes and values for the opening 'body' tag.
+
+=cut
+
+######################################################################
+
+sub start_html {
+	my ($self, $title, $ra_head, $rh_body) = @_;
+	return( join( '',
+		$self->prologue_tag(),
+		$self->html_start(),
+		$self->head_start(),
+		$self->title( $title || 'Untitled Document' ),
+		(ref( $ra_head ) eq 'ARRAY') ? @{$ra_head} : ($ra_head),
+		$self->head_end(),
+		$self->body_start( $rh_body ),
+	) );
+}
+
+######################################################################
+
+=head2 end_html()
+
+This method returns a canned HTML template that is suitable for use as the bottom
+of an HTML page.  It consists of the closing 'body' and 'html' tags.
+
+=cut
+
+######################################################################
+
+sub end_html {
+	my $self = shift( @_ );
+	return( $self->body_end().$self->html_end() );
 }
 
 ######################################################################
@@ -728,6 +841,18 @@ new tag start on a new line; 2. making all tag and attribute names uppercase; 3.
 ensuring that about 20 often-used tag attributes always appear in the same order
 (eg: 'type' is before 'name' is before 'value'), and before any others.
 
+=item 0
+
+Our textarea() method is autoloaded, and doesn't have the special symantecs
+that CGI.pm's textarea() does.
+
+=item 0
+
+Our convenience method start_html() is very simple and only accepts the three
+positional arguments ['title', 'head', 'body'].  Title is the most commonly used
+argument by far, and you can easily replicate the effects of missing arguments by
+making appropriate tags explicitely and passing them with the "head" argument.
+
 =back
 
 =head1 AUTHOR
@@ -773,6 +898,6 @@ Synopsis program from his aforementioned module.
 
 =head1 SEE ALSO
 
-perl(1), Class::ParamParser, CGI.
+perl(1), Class::ParamParser, HTML::FormTemplate, CGI.
 
 =cut

@@ -1,3 +1,23 @@
+2001-02-15   Darren Duncan <perl@DarrenDuncan.net>
+
+	* Release 1.03.
+	
+	* This release is the first one that includes the CPAN standard files 
+	"Makefile.PL", "test.pl", and "MANIFEST", which were all created following 
+	the previous release.  The content of "Manifest" was previously inside the 
+	"ReadMe" file.  Improved the install instructions in my ReadMe file.
+	
+	* Added programmer documentation to the various blocks of code, so it is 
+	easier to see how they work; useful because a lot is done with little code.
+	
+	* Removed the method positional_by_default() and associated class property 
+	as this property wasn't used anywhere, so to simplify things.  This change 
+	would break any code that depends on the method to be there.
+	
+	* Added convenience methods start_html() and end_html() which make a canned 
+	html header and footer respectively.  They are much simpler than the ones 
+	removed for the previous release, and not proprietary.
+	
 2001-01-03   Darren Duncan <perl@DarrenDuncan.net>
 
 	* Release 1.02.
@@ -14,7 +34,7 @@ HTML::
 		- "libdwg": v1.0 r2000-07-23, v1.11 r2000-08-23
 		- "CGI-FormGenerator": v0.9 r2000-09-04, v0.9201 r2000-12-26
 	
-	* This module requires Perl version 5.004 (although 5.0 may work).
+	* This module requires Perl version 5.004.
 	It also requires Class::ParamParser 1.01.
 
 	* Code changes since HTML::TagMaker consist mainly in the removal of the 
