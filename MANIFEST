@@ -1,6 +1,6 @@
 ChangeLog
-EasyTags.pm
+lib/HTML/EasyTags.pm
 Makefile.PL
 MANIFEST
 ReadMe
-test.pl
+t/HTML-EasyTags.t

@@ -1,6 +1,6 @@
 =head1 NAME
 
-HTML::EasyTags - Make well-formed XHTML or HTML 4 tags/lists/parts easily
+HTML::EasyTags - Make well-formed XHTML or HTML 4 tags, lists
 
 =cut
 
@@ -9,15 +9,18 @@ HTML::EasyTags - Make well-formed XHTML or HTML 4 tags/lists/parts easily
 package HTML::EasyTags;
 require 5.004;
 
-# Copyright (c) 1999-2002, Darren R. Duncan. All rights reserved. This module is
-# free software; you can redistribute it and/or modify it under the same terms as
-# Perl itself.  However, I do request that this copyright information remain
-# attached to the file.  If you modify this module and redistribute a changed
-# version then please attach a note listing the modifications.
+# Copyright (c) 1999-2003, Darren R. Duncan.  All rights reserved.  This module
+# is free software; you can redistribute it and/or modify it under the same terms
+# as Perl itself.  However, I do request that this copyright information and
+# credits remain attached to the file.  If you modify this module and
+# redistribute a changed version then please attach a note listing the
+# modifications.  This module is available "as-is" and the author can not be held
+# accountable for any problems resulting from its use.
 
 use strict;
+use warnings;
 use vars qw($VERSION $AUTOLOAD);
-$VERSION = '1.07';
+$VERSION = '1.071';
 
 ######################################################################
 
@@ -40,7 +43,7 @@ $VERSION = '1.07';
 	use HTML::EasyTags;
 
 	my $html = HTML::EasyTags->new();
-	$html->groups_by_default( 1 );	
+	$html->groups_by_default( 1 );
 
 	print
 		$html->start_html( 
@@ -53,21 +56,21 @@ $VERSION = '1.07';
 	}
 	__endquote
 		),
-		$html->h1( 'A Simple Example' ),	
+		$html->h1( 'A Simple Example' ),
 		$html->p( 
 			"Click " . 
 			$html->a( href => 'http://search.cpan.org', text => 'here' ) . 
 			" for more."
-		),	
-		$html->hr,	
+		),
+		$html->hr,
 		$html->table(
 			$html->tr( [
 				$html->th( [ 'Name', 'Count', 'URL', 'First Access' ] ), 
 				$html->td( [ 'Old Page', 33, 'http://www.domain.com', 
 					'1999/04/23 13:55:02' ] )
 			] )
-		),	
-		$html->hr,	
+		),
+		$html->hr,
 		$html->form_start( method => 'post', action => 'http://localhost' ),
 		$html->p( 
 			"What's your name? " . 
@@ -91,7 +94,7 @@ $VERSION = '1.07';
 			$html->select_end
 		),
 		$html->input( type => 'submit' ),
-		$html->form_end,	
+		$html->form_end,
 		$html->end_html;
 
 =head1 DESCRIPTION
@@ -450,10 +453,10 @@ are not changed.
 sub clone {
 	my ($self, $clone, @args) = @_;
 	ref($clone) eq ref($self) or $clone = bless( {}, ref($self) );
-	
+
 	$clone->{$KEY_AUTO_GROUP} = $self->{$KEY_AUTO_GROUP};
 	$clone->{$KEY_PROLOGUE} = $self->{$KEY_PROLOGUE};
-	
+
 	return( $clone );
 }
 
@@ -526,7 +529,7 @@ displaying CSS or JavaScript code in an elegant manner.
 
 sub comment_tag {
 	my $self = shift( @_ );
-	my @text = (ref($_[0]) eq 'ARRAY') ? @{$_[0]} : @_;	
+	my @text = (ref($_[0]) eq 'ARRAY') ? @{$_[0]} : @_;
 	if( scalar( @text ) <= 1 ) {
 		return( "\n<!-- @text -->" );
 	} else {
@@ -577,13 +580,13 @@ sub make_html_tag {
 	unless( $what_to_make =~ /^($TAG_PAIR|$TAG_START|$TAG_END|$TAG_MINI)$/ ) {
 		$what_to_make = $NO_PAIR_TAGS{$tag_name} ? $TAG_MINI : $TAG_PAIR;
 	}
-	
+
 	# Shortcut - if we're making just an end tag, there are no args or text
 
 	if( $what_to_make eq $TAG_END ) {
 		return( "\n</$tag_name>" );
 	}
-				
+
 	# Assemble the html tag attributes, ordered with more important on the left
 
 	my $param_str = '';
@@ -593,7 +596,7 @@ sub make_html_tag {
 
 		# Some tag attributes assert true simply by their names being present.
 		# Therefore, omit these if their values are false.
-		
+
 		next if( $NO_VALUE_PARAMS{$param} and !$tag_params{$param} );
 
 		# Show names of attributes that display with values or are true
@@ -607,15 +610,15 @@ sub make_html_tag {
 	if( $what_to_make eq $TAG_MINI ) {
 		return( "\n<$tag_name$param_str />$text" );
 	}
-	
+
 	# Here we make just a start tag with attributes and text
 
 	if( $what_to_make eq $TAG_START ) {
 		return( "\n<$tag_name$param_str>$text" );
 	}
-	
+
 	# Here we make both start and end tags, with attributes and text
-	
+
 	return( "\n<$tag_name$param_str>$text</$tag_name>" );
 }
 
@@ -688,7 +691,7 @@ sub make_html_tag_group {
 		push( @{$ra_values}, 
 			map { $last_value } (($#{$ra_values} + 1)..$max_tag_ind) );
 	}
-	
+
 	# Now put the text back where it belongs; its value count is now normalized
 
 	my $ra_text = delete( $tag_params{$PARAM_TEXT} );
@@ -829,7 +832,7 @@ sub end_html {
 sub _params_to_hash {
 	my ($self, $ra_params_in) = @_;
 	@{$ra_params_in} or return( {} );
-	
+
 	my %params_in = ();
 	if( ref( $ra_params_in->[0] ) eq 'HASH' ) {
 		%params_in = %{$ra_params_in->[0]};
@@ -840,7 +843,7 @@ sub _params_to_hash {
 	} else {
 		%params_in = @{$ra_params_in};
 	}
-	
+
 	my %params_out = ();
 	foreach my $key (sort keys %params_in) {
 		my $value = $params_in{$key};
@@ -908,16 +911,21 @@ document support, and CGI.pm has no explicit frameset support.
 
 =head1 AUTHOR
 
-Copyright (c) 1999-2002, Darren R. Duncan. All rights reserved. This module is
-free software; you can redistribute it and/or modify it under the same terms as
-Perl itself.  However, I do request that this copyright information remain
-attached to the file.  If you modify this module and redistribute a changed
-version then please attach a note listing the modifications.
+Copyright (c) 1999-2003, Darren R. Duncan.  All rights reserved.  This module
+is free software; you can redistribute it and/or modify it under the same terms
+as Perl itself.  However, I do request that this copyright information and
+credits remain attached to the file.  If you modify this module and
+redistribute a changed version then please attach a note listing the
+modifications.  This module is available "as-is" and the author can not be held
+accountable for any problems resulting from its use.
 
 I am always interested in knowing how my work helps others, so if you put this
-module to use in any of your own code then please send me the URL.  Also, if you
-make modifications to the module because it doesn't work the way you need, please
-send me a copy so that I can roll desirable changes into the main release.
+module to use in any of your own products or services then I would appreciate
+(but not require) it if you send me the website url for said product or
+service, so I know who you are.  Also, if you make non-proprietary changes to
+the module because it doesn't work the way you need, and you are willing to
+make these freely available, then please send me a copy so that I can roll
+desirable changes into the main release.
 
 Address comments, suggestions, and bug reports to B<perl@DarrenDuncan.net>.
 
